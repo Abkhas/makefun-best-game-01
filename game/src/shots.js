@@ -1,0 +1,9 @@
+import {mulberry32} from './random.js';
+import {beginGame,startWave,stepGame} from './game.js';
+import {buildTower,upgradeTower} from './towers.js';
+import {PATHS} from './map.js';
+const PATH_LENGTHS=PATHS.map(path=>path.slice(1).reduce((d,b,i)=>d+Math.hypot(b[0]-path[i][0],b[1]-path[i][1]),0));
+export function stageShot(game,name){const seed=Number(new URLSearchParams(location.search).get('seed'))||1;game.rng=mulberry32(seed);game.gold=5200;const layout=[3,2,3,0,1,3,2,3,0,1,3,2,3,3];for(let i=0;i<layout.length;i++){buildTower(game,i,layout[i]);if(layout[i]===3||layout[i]===2){upgradeTower(game,i);upgradeTower(game,i)}}game.gold=1900;game.screen='play';
+ if(name==='boss'){game.wave=11;game.wavesCleared=11;startWave(game);for(let i=0;i<3600;i++){stepGame(game);if(game.screen!=='play')break;const boss=game.enemies.find(e=>e.boss);if(boss&&boss.hp<boss.maxHp*.68)break}game.selected=null;return}
+ if(name==='play'){const cooldowns=game.plots.map(p=>p.tower?.cooldown);for(const plot of game.plots)if(plot.tower)plot.tower.cooldown=999;for(let w=1;w<=6;w++){if(!startWave(game))break;let count=0;while(game.waveActive&&game.screen==='play'&&count++<7200){stepGame(game);if(game.enemies.length>=6&&Math.max(...game.enemies.map(e=>e.distance/PATH_LENGTHS[e.pathIndex]))>=.45)break}if(game.enemies.length>=6&&Math.max(...game.enemies.map(e=>e.distance/PATH_LENGTHS[e.pathIndex]))>=.45)break}game.plots.forEach((p,i)=>{if(p.tower)p.tower.cooldown=cooldowns[i]});game.selected=null;return}
+ const limit=name==='victory'?12:3;for(let wave=0;wave<limit;wave++){if(game.screen!=='play'||!startWave(game))break;let count=0;while(game.waveActive&&game.screen==='play'&&count++<7200)stepGame(game)}if(name==='victory'&&game.screen!=='victory'){for(let i=0;i<18000&&game.screen==='play';i++)stepGame(game)}if(name==='title'){if(startWave(game))for(let i=0;i<180;i++)stepGame(game);game.screen='title'}game.selected=null}

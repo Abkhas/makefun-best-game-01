@@ -1,0 +1,3 @@
+const POOL=['skitter','skitter','shambler','wisp','spitter','brute'];
+export function wavePlan(wave){if(wave>=12)return[{type:'king',count:1,interval:1.2},{type:'wisp',count:8,interval:.55}];const total=7+wave*2,rows=[];for(let i=0;i<total;i++){let type;if(wave<3)type=i%4?'skitter':'shambler';else if(wave<6)type=POOL[(i+wave)%4];else type=POOL[(i*3+wave)%POOL.length];rows.push({type,count:1,interval:Math.max(.32,1.02-wave*.035)})}return rows}
+export function wavePreview(wave){if(wave>=12)return'THE HOLLOW KING  ·  WISP GUARD';return[...new Set(wavePlan(wave).map(x=>x.type))].map(x=>({skitter:'SKITTER',shambler:'SHAMBLER',wisp:'WISP PACK',spitter:'SPITTER',brute:'BRUTE'}[x])).join('  ·  ')}
